@@ -102,6 +102,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 - Built with [n8n](https://n8n.io/)
 - URL scanning powered by [urlscan.io](https://urlscan.io/)
+- File Scanning powered by[VirusTotal.com](https://www.virustotal.com/gui/home/upload)
 - AI analysis powered by [Google Gemini](https://ai.google/)
 
 ---
