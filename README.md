@@ -96,9 +96,7 @@ You can modify the workflow to:
 - Limit access to the workflow's webhook URL
 - Regularly update the workflow to include the latest threat intelligence
 
-## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgements
 
@@ -109,4 +107,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-*Note: This tool is provided for educational and informational purposes only. Always verify critical security findings through multiple sources before taking action.*
