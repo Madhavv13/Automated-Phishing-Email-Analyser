@@ -33,6 +33,7 @@ An automated workflow for analyzing and reporting on potential phishing emails. 
 
 - n8n instance (self-hosted or cloud)
 - API keys for:
+  - virustotal.com (for File scanning)
   - urlscan.io (for URL scanning)
   - Google Gemini (for advanced analysis)
   - Email service (for sending reports)
@@ -42,10 +43,11 @@ An automated workflow for analyzing and reporting on potential phishing emails. 
 1. Clone this repository
 2. Import the workflow into your n8n instance
 3. Configure the required credentials:
+   - virustotal API
    - urlscan.io API
    - Google Gemini API
    - Email service (SMTP or other)
-4. Update the recipient email address in the workflow
+5. Update the recipient email address in the workflow
 
 ## Usage
 
