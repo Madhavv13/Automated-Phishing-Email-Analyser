@@ -13,16 +13,18 @@ An automated workflow for analyzing and reporting on potential phishing emails. 
 ## How It Works
 
 1. **Input Processing**: Accepts email data including headers and content
-2. **Authentication Checks**:
+   <img width="581" height="392" alt="image" src="https://github.com/user-attachments/assets/5391283f-962a-41d4-883e-642e72a46e8a" />
+
+3. **Authentication Checks**:
    - SPF (Sender Policy Framework) verification
    - DKIM (DomainKeys Identified Mail) validation
    - DMARC (Domain-based Message Authentication) analysis
    - ARC (Authenticated Receive Chain) validation
-3. **Content Analysis**:
+4. **Content Analysis**:
    - Extracts and examines all URLs
    - Scans for known phishing indicators
    - Analyzes email structure for suspicious patterns
-4. **Report Generation**: Creates a professional HTML report with:
+5. **Report Generation**: Creates a professional HTML report with:
    - Sender information and verification status
    - Authentication check results
    - URL analysis with safety ratings
