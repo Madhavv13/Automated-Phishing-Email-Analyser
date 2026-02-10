@@ -1,0 +1,848 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c9fab4b0-d9df-4c3b-8b79-758411817beb",
+              "name": "header",
+              "value": "={{ $json.headers }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -160,
+        -32
+      ],
+      "id": "e46d0367-4a1c-4e5f-8978-985e1b4f6b00",
+      "name": "Header Fields"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f388c154-0b24-4d8d-9b58-32137bfcb6a7",
+              "name": "SPF check",
+              "value": "={{ $json.header['received-spf'] }}",
+              "type": "string"
+            },
+            {
+              "id": "4ef7b782-6815-4b8a-b815-81bd57e0edd7",
+              "name": "DKIM check",
+              "value": "={{ $json.header['authentication-results'] }}{{ $json.header['dkim-signature'] }}",
+              "type": "string"
+            },
+            {
+              "id": "cb775c79-dc2b-4470-b6e0-c2340f7ba772",
+              "name": "Dmarc Check",
+              "value": "={{ $json.header['authentication-results'] }}",
+              "type": "string"
+            },
+            {
+              "id": "a96b62e5-a483-4c08-979f-10572591b460",
+              "name": "ARC Check",
+              "value": "={{ $json.header['arc-authentication-results'] }}",
+              "type": "string"
+            },
+            {
+              "id": "ea880b6a-3b11-407b-9507-e0dc35704db5",
+              "name": "From",
+              "value": "={{ $json.header.from }}",
+              "type": "string"
+            },
+            {
+              "id": "e332cc20-d973-41bf-86e0-d9cd374840f3",
+              "name": "To",
+              "value": "={{ $json.header.to }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        96,
+        -32
+      ],
+      "id": "82e7a769-9337-4369-bf1a-87a5947e8080",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "const html = $json[\"Text\"] || \"\";\n\nconst urls = [];\nconst regex = /<a\\s+(?:[^>]*?\\s+)?href=[\"']((?:https?:\\/\\/)[^\"']+)[\"']/gi;\n\nlet match;\nwhile ((match = regex.exec(html)) !== null) {\n  // Optional: skip data, javascript, or mailto links (safety)\n  const url = match[1];\n  if (!url.startsWith(\"mailto:\") && !url.startsWith(\"javascript:\")) {\n    urls.push(url);\n  }\n}\n\nreturn [\n  {\n    json: {\n      urls: urls\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1008,
+        176
+      ],
+      "id": "1e2ea4f6-8031-47db-9cd6-fbeffbfc3216",
+      "name": "URL"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "4acbc1b3-c379-4256-a5a0-df1ad4cdbe61",
+              "name": "Text",
+              "value": "={{ $json.html }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1248,
+        160
+      ],
+      "id": "17c026cb-2919-4572-a6f3-331a624ccfb9",
+      "name": "URL Fields"
+    },
+    {
+      "parameters": {
+        "binaryData": true,
+        "binaryPropertyName": "={{ Object.keys($binary)[0] }}",
+        "dataPropertyName": "=hash_{{ $binary[Object.keys($binary)[0]].fileName }}"
+      },
+      "type": "n8n-nodes-base.crypto",
+      "typeVersion": 1,
+      "position": [
+        -1024,
+        352
+      ],
+      "id": "7c69accf-b896-449d-a4f6-5eb5504972ea",
+      "name": "Crypto",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.urls }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.urlScanIo",
+      "typeVersion": 1,
+      "position": [
+        -576,
+        160
+      ],
+      "id": "e0ff6014-6c54-47f6-aeb2-72f4d03cc866",
+      "name": "Perform a scan",
+      "alwaysOutputData": true,
+      "credentials": {
+        "urlScanIoApi": {
+          "id": "To7bEDuANtKR8REu",
+          "name": "urlscan.io account 2"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "scanId": "={{ $json.scanId }}"
+      },
+      "type": "n8n-nodes-base.urlScanIo",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        160
+      ],
+      "id": "3d7dd584-ba4f-4e73-8365-df0a4f6e1afa",
+      "name": "Get a scan",
+      "alwaysOutputData": true,
+      "credentials": {
+        "urlScanIoApi": {
+          "id": "To7bEDuANtKR8REu",
+          "name": "urlscan.io account 2"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "urls",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "id": "3ed22851-a3eb-42bb-8aab-ebd53b5f6c15",
+      "name": "Split URLs",
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -800,
+        160
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "$binary",
+        "include": "allOtherFields",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        -1248,
+        352
+      ],
+      "id": "1e225f9a-65bd-4ed5-a651-e54de36f1732",
+      "name": "Split Files",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "amount": "={{ 20 }}"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        -352,
+        160
+      ],
+      "id": "ea89dced-236d-4114-801c-78cc527f4baa",
+      "name": "Wait",
+      "webhookId": "f8578673-1a0a-45cb-9dcb-151b7f6320d9",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "url": "=https://www.virustotal.com/api/v3/files/{{ Object.values($json).find(v => typeof v === 'string' && v.match(/^[a-f0-9]{32}$/i)) }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "virusTotalApi",
+        "options": {}
+      },
+      "id": "09d477e1-b689-4225-9ccf-16e32be1f44b",
+      "name": "VirusTotal HTTP Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -800,
+        352
+      ],
+      "alwaysOutputData": true,
+      "credentials": {
+        "virusTotalApi": {
+          "id": "W28cVsGdWkrskQFU",
+          "name": "VirusTotal account 2"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "20279ce7-8f7d-4cab-ba3a-3557a3a057dc",
+              "name": "Name",
+              "value": "={{ $json.data.attributes.meaningful_name }}",
+              "type": "string"
+            },
+            {
+              "id": "fcd9f1ba-24c7-4350-adc1-fad38d4934f0",
+              "name": "Status",
+              "value": "={{ $json.data.attributes.last_analysis_stats }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -576,
+        352
+      ],
+      "id": "4653b3b0-904b-430b-93cb-5e5c82af7e5b",
+      "name": "Malacious_Score",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e1ffd3bf-5904-4212-b4cb-64966f034058",
+              "name": "Screen_Shot",
+              "value": "={{ $json.task.screenshotURL }}",
+              "type": "string"
+            },
+            {
+              "id": "5a17981c-1cf8-43e2-9b18-ef599c15b84d",
+              "name": "Report_Url",
+              "value": "={{ $json.task.reportURL }}",
+              "type": "string"
+            },
+            {
+              "id": "68aa00d0-a049-4959-9ba5-a34398dac1ef",
+              "name": "verdict",
+              "value": "={{ $json.verdicts }}",
+              "type": "object"
+            },
+            {
+              "id": "14e9831b-39ce-4126-baa2-451253777033",
+              "name": "Original_URL",
+              "value": "={{ $json.data.requests[0].request.request.url }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        96,
+        160
+      ],
+      "id": "f0d22ad8-5184-48fc-ab89-6bc2f49cb277",
+      "name": "URL_Score",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "files",
+        "options": {}
+      },
+      "id": "67031084-6a05-4fbf-986a-747e975d91a9",
+      "name": "Aggregate File Scores",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        -352,
+        352
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "destinationFieldName": "urls",
+        "options": {}
+      },
+      "id": "910e649c-2d72-47d7-a8b3-79b22ea0b804",
+      "name": "Aggregate URL Scores",
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        320,
+        160
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineByPosition",
+        "options": {
+          "includeUnpaired": true
+        }
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        720,
+        288
+      ],
+      "id": "9f85a2ae-426d-4fa8-bb4b-42859d16b7ff",
+      "name": "Merge",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.5-flash",
+          "mode": "list",
+          "cachedResultName": "models/gemini-2.5-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=You are an automated report generator.  \nGenerate a professional HTML \"Header Analysis\" for the following JSON input.  \n Give a report by doing a detailed header analysis spf check,dmark check\nInto a tabular format\n\nit must be sent to the client\nuse whoislookup ,abuseip db for ip check and generate a report in tabular format simple.\n\nJSON Input:\n{{ JSON.stringify($json) }}\n\nHTML OUTPUT:\n<!DOCTYPE html>\n<html lang=3D\"en\">\n<head>\n    <meta charset=3D\"UTF-8\">\n    <meta name=3D\"viewport\" content=3D\"width=3Ddevice-width, initial-scale=\n=3D1.0\">\n    <title>Email Header Analysis Report</title>\n    <style>\n        body {\n            font-family: Arial, sans-serif;\n            line-height: 1.6;\n            color: #333;\n            margin: 0;\n            padding: 20px;\n            background-color: #f4f4f4;\n        }\n        .container {\n            max-width: 900px;\n            margin: 20px auto;\n            background: #fff;\n            padding: 30px;\n            border-radius: 8px;\n            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);\n        }\n        h1, h2, h3 {\n            color: #0056b3;\n            border-bottom: 2px solid #eee;\n            padding-bottom: 10px;\n            margin-top: 30px;\n        }\n        h1 {\n            text-align: center;\n            color: #004085;\n            border-bottom: 3px solid #004085;\n            padding-bottom: 15px;\n            margin-bottom: 40px;\n        }\n        table {\n            width: 100%;\n            border-collapse: collapse;\n            margin-bottom: 20px;\n            background-color: #fcfcfc;\n        }\n        th, td {\n            border: 1px solid #ddd;\n            padding: 10px;\n            text-align: left;\n        }\n        th {\n            background-color: #e9f5ff;\n            font-weight: bold;\n            color: #333;\n        }\n        .pass {\n            color: green;\n            font-weight: bold;\n        }\n        .fail {\n            color: red;\n            font-weight: bold;\n        }\n        .neutral {\n            color: orange;\n            font-weight: bold;\n        }\n        .info {\n            background-color: #d9edf7;\n            border-color: #bce8f1;\n            color: #31708f;\n            padding: 15px;\n            margin-bottom: 20px;\n            border-radius: 4px;\n        }\n        .footer {\n            text-align: center;\n            margin-top: 40px;\n            padding-top: 20px;\n            border-top: 1px solid #eee;\n            font-size: 0.9em;\n            color: #777;\n        }\n    </style>\n</head>\n<body>\n    <div class=3D\"container\">\n        <h1>Email Header Analysis Report</h1>\n\n        \n\n        <h2>1. Email Sender Information</h2>\n        <table>\n            <thead>\n                <tr>\n                    <th>Field</th>\n                    <th>Value</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr>\n                    <td>Sender Domain</td>\n                    <td>gmail.com</td>\n                </tr>\n                <tr>\n                    <td>Return-Path</td>\n                    <td>dummy132003@gmail.com</td>\n                </tr>\n                <tr>\n                    <td>From Header</td>\n                    <td>Dummy &lt;dummy132003@gmail.com&gt;</td>\n                </tr>\n                <tr>\n                    <td>Sender IP</td>\n                    <td>209.85.220.41</td>\n                </tr>\n            </tbody>\n        </table>\n\n        <h2>2. Email Authentication Checks</h2>\n\n        <h3>2.1. SPF (Sender Policy Framework) Verification</h3>\n        <p>SPF checks if the sending IP address is authorized by the domain=\n owner to send emails on their behalf. The Return-Path domain is used for t=\nhe SPF check.</p>\n        <table>\n            <thead>\n                <tr>\n                    <th>Parameter</th>\n                    <th>Detail</th>\n                    <th>Status</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr>\n                    <td>Domain Checked</td>\n                    <td><code>gmail.com</code> (from Return-Path)</td>\n                    <td rowspan=3D\"4\" class=3D\"pass\">PASS</td>\n                </tr>\n                <tr>\n                    <td>SPF Record (TXT)</td>\n                    <td><code>v=3Dspf1 include:_spf.google.com ~all</code><=\n/td>\n                </tr>\n                <tr>\n                    <td>Sender IP</td>\n                    <td><code>209.85.220.41</code></td>\n                </tr>\n                <tr>\n                    <td>Result</td>\n                    <td>IP <code>209.85.220.41</code> is authorized by Goog=\nle's SPF record.</td>\n                </tr>\n            </tbody>\n        </table>\n        <p><strong>Recommendation:</strong> SPF is correctly configured and=\n passed for this sender. This indicates a legitimate sender for the specifi=\ned domain.</p>\n\n        <h3>2.2. DMARC (Domain-based Message Authentication, Reporting & Co=\nnformance) Verification</h3>\n        <p>DMARC builds on SPF and DKIM to provide a policy for handling em=\nails that fail authentication, and offers reporting capabilities.</p>\n        <table>\n            <thead>\n                <tr>\n                    <th>Parameter</th>\n                    <th>Detail</th>\n                    <th>Status</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr>\n                    <td>Domain Checked</td>\n                    <td><code>gmail.com</code> (from From Header)</td>\n                    <td rowspan=3D\"6\" class=3D\"pass\">PASS</td>\n                </tr>\n                <tr>\n                    <td>DMARC Record (TXT for <code>_dmarc.gmail.com</code>=\n)</td>\n                    <td><code>v=3DDMARC1; p=3Dquarantine; fo=3D1; rua=3Dmai=\nlto:mailauth-reports@google.com; adkim=3Dr; aspf=3Ds</code></td>\n                </tr>\n                <tr>\n                    <td>DMARC Policy (<code>p</code>)</td>\n                    <td><code>quarantine</code> (instructs recipients to mo=\nve unauthenticated emails to spam/junk folder)</td>\n                </tr>\n                <tr>\n                    <td>Aggregate Reporting (<code>rua</code>)</td>\n                    <td><code>mailto:mailauth-reports@google.com</code></td=\n>\n                </tr>\n                <tr>\n                    <td>SPF Alignment</td>\n                    <td>Strict (<code>aspf=3Ds</code>). Return-Path domain =\n<code>gmail.com</code> matches From domain <code>gmail.com</code> exactly.<=\n/td>\n                </tr>\n                <tr>\n                    <td>Overall Result</td>\n                    <td>SPF passed and aligned, indicating DMARC authentica=\ntion successful.</td>\n                </tr>\n            </tbody>\n        </table>\n        <p><strong>Recommendation:</strong> DMARC is correctly configured a=\nnd passed. The <code>quarantine</code> policy for <code>gmail.com</code> en=\nsures that even if authentication were to fail, recipients would treat the =\nemail with caution, minimizing spoofing risks.</p>\n\n        <h2>3. IP Reputation Analysis</h2>\n\n        <h3>3.1. Whois Lookup for Sender IP (209.85.220.41)</h3>\n        <p>Whois data provides information about the ownership and registra=\ntion of an IP address.</p>\n        <table>\n            <thead>\n                <tr>\n                    <th>Parameter</th>\n                    <th>Value</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr>\n                    <td>IP Address</td>\n                    <td><code>209.85.220.41</code></td>\n                </tr>\n                <tr>\n                    <td>Organization</td>\n                    <td>Google LLC</td>\n                </tr>\n                <tr>\n                    <td>Country</td>\n                    <td>US (United States)</td>\n                </tr>\n                <tr>\n                    <td>ASN</td>\n                    <td>AS15169 GOOGLE</td>\n                </tr>\n                <tr>\n                    <td>Abuse Contact</td>\n                    <td>abuse@google.com</td>\n                </tr>\n                <tr>\n                    <td>Status</td>\n                    <td>Allocated / Assigned to Google LLC</td>\n                </tr>\n            </tbody>\n        </table>\n        <p><strong>Analysis:</strong> The IP address <code>209.85.220.41</c=\node> is legitimately registered to Google LLC, which aligns with the sender=\n domain <code>gmail.com</code>. This confirms the IP belongs to the expecte=\nd infrastructure.</p>\n\n        <h3>3.2. AbuseIPDB Report for Sender IP (209.85.220.41)</h3>\n        <p>AbuseIPDB is a database of reported malicious IP addresses. A lo=\nw abuse score indicates a good reputation.</p>\n        <table>\n            <thead>\n                <tr>\n                    <th>Parameter</th>\n                    <th>Value</th>\n                </tr>\n            </thead>\n            <tbody>\n                <tr>\n                    <td>IP Address</td>\n                    <td><code>209.85.220.41</code></td>\n                </tr>\n                <tr>\n                    <td>Abuse Score</td>\n                    <td>0% (Very Low)</td>\n                </tr>\n                <tr>\n                    <td>Total Reports</td>\n                    <td>0</td>\n                </tr>\n                <tr>\n                    <td>Last Reported</td>\n                    <td>N/A</td>\n                </tr>\n                <tr>\n                    <td>Confidence of Abuse</td>\n                    <td>0%</td>\n                </tr>\n                <tr>\n                    <td>ISP</td>\n                    <td>Google LLC</td>\n                </tr>\n                <tr>\n                    <td>Usage Type</td>\n                    <td>Data Center/Web Hosting/ISP</td>\n                </tr>\n            </tbody>\n        </table>\n        <p><strong>Analysis:</strong> The IP address <code>209.85.220.41</c=\node> has an excellent reputation with an abuse score of 0%. This is expecte=\nd for a legitimate Google sending IP and indicates it is not currently flag=\nged for malicious activities.</p>\n\n        <h2>4. Overall Conclusion & Recommendations</h2>\n        <p>Based on the detailed analysis:</p>\n        <ul>\n            <li><strong>SPF Check:</strong> <span class=3D\"pass\">PASS</span=\n>. The sender IP <code>209.85.220.41</code> is authorized by <code>gmail.co=\nm</code>'s SPF record.</li>\n            <li><strong>DMARC Check:</strong> <span class=3D\"pass\">PASS</sp=\nan>. <code>gmail.com</code> has a <code>p=3Dquarantine</code> DMARC policy,=\n and the email aligns with SPF.</li>\n            <li><strong>IP Reputation:</strong> The IP <code>209.85.220.41<=\n/code> is legitimately owned by Google LLC and has an excellent reputation =\nwith AbuseIPDB (0% abuse score).</li>\n        </ul>\n        <p>The email originating from <code>dummy132003@gmail.com</code> wi=\nth sender IP <code>209.85.220.41</code> demonstrates strong authentication =\nand a clean IP reputation. This indicates a high likelihood of a legitimate=\n email from a trusted source (Gmail).</p>\n\n        <div class=3D\"footer\">\n            <p>&copy; 2024 Automated Report Generator. All rights reserved.=\n</p>\n        </div>\n    </div>\n</body>\n</html>\n\nUse this html as sample and generate a new html with the input json.Dont add anything extra follow the template\n"
+            }
+          ]
+        },
+        "simplify": false,
+        "options": {
+          "temperature": 0
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        704,
+        -16
+      ],
+      "id": "817665c0-76bd-41d1-b26c-47f41e0ae01a",
+      "name": "Message a model",
+      "alwaysOutputData": false,
+      "retryOnFail": true,
+      "waitBetweenTries": 100,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "RoRJUYW3GC4qQvAs",
+          "name": "Google Gemini(PaLM) Api account 2"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "sendTo": "k.madhavv123@gmail.com",
+        "subject": "=phising report",
+        "message": "={{ $json.candidates[0].content.parts[0].text }}{{ $json.html }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2320,
+        192
+      ],
+      "id": "adae7adf-cbba-4190-82e2-7ac18bf03d4d",
+      "name": "Send a message",
+      "webhookId": "d3ebb22d-c926-443d-bd61-4abdb1ea89c9",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "u14s5jxT2OFehKcE",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Get input JSON\nconst input = items[0].json;\n\n// Helper to decide verdict text and CSS class\nfunction getVerdictText(verdictObj) {\n  if (!verdictObj) return { text: \"Unknown\", cls: \"verdict-unknown\" };\n  const malicious = verdictObj.overall?.malicious;\n  if (malicious === true) return { text: \"Malicious\", cls: \"verdict-malicious\" };\n  if (malicious === false) return { text: \"Benign\", cls: \"verdict-benign\" };\n  return { text: \"Unknown\", cls: \"verdict-unknown\" };\n}\n\n// ---------- URL SECTION ----------\nconst urlEntries = (input.urls || [])\n  .map((url, index) => {\n    const { text: verdictText, cls: verdictCls } = getVerdictText(url.verdict);\n\n    return `\n      <div class=\"entry\">\n        <h3>URL #${index + 1}</h3>\n        <p><strong>URL:</strong> <a href=\"${url.Original_URL}\" target=\"_blank\">${url.Original_URL}</a></p>\n        <p><strong>Name:</strong> ${url.Original_URL}</p>\n        <p><strong>Screenshot:</strong> \n          <a href=\"${url.Screen_Shot}\" target=\"_blank\">View Screenshot</a><br>\n          <img src=\"${url.Screen_Shot}\" alt=\"Screenshot of analyzed URL\">\n        </p>\n        <p><strong>Verdict:</strong> <span class=\"${verdictCls}\">${verdictText}</span></p>\n        <p><strong>Validator:</strong> urlscan.io (<a href=\"${url.Report_Url}\" target=\"_blank\">Full Report</a>)</p>\n      </div>\n    `;\n  })\n  .join(\"\\n\");\n\n// ---------- FILE SECTION ----------\nconst fileEntries = (input.files || [])\n  .map((file, index) => {\n    if (!file.Name || !file.Status) {\n      return `\n        <div class=\"entry\">\n          <h3>File #${index + 1}</h3>\n          <p><strong>File Name:</strong> <span class=\"verdict-unknown\">N/A (File details not available)</span></p>\n          <p><strong>Overall Verdict:</strong> <span class=\"verdict-unknown\">Status Not Available</span></p>\n          <p><strong>Validator:</strong> Virustotal</p>\n        </div>\n      `;\n    }\n\n    const maliciousCount = file.Status.malicious || 0;\n    const verdictCls = maliciousCount > 0 ? \"verdict-malicious\" : \"verdict-benign\";\n    const verdictText =\n      maliciousCount > 0\n        ? `Malicious (${maliciousCount} engines)`\n        : \"No Malicious Detections\";\n\n    const rows = Object.entries(file.Status)\n      .map(([key, val]) => `<tr><td>${key.replace(/-/g, \" \")}</td><td>${val}</td></tr>`)\n      .join(\"\");\n\n    return `\n      <div class=\"entry\">\n        <h3>File #${index + 1}</h3>\n        <p><strong>File Name:</strong> ${file.Name}</p>\n        <p><strong>Overall Verdict:</strong> <span class=\"${verdictCls}\">${verdictText}</span></p>\n        <p><strong>Validator:</strong> Virustotal</p>\n        <table class=\"file-status-table\">\n          <thead>\n            <tr><th>Category</th><th>Count</th></tr>\n          </thead>\n          <tbody>${rows}</tbody>\n        </table>\n      </div>\n    `;\n  })\n  .join(\"\\n\");\n\n// ---------- FINAL HTML ----------\nconst html = `\n<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n  <meta charset=\"UTF-8\">\n  <title>Phishing Analysis Report</title>\n  <style>\n    body {font-family: Arial, sans-serif;margin: 20px;color: #333;line-height: 1.6;background-color: #fcfcfc;}\n    h1, h2, h3 {color: #222;border-bottom: 1px solid #ccc;padding-bottom: 5px;margin-top: 25px;}\n    h1 {text-align: center;margin-bottom: 30px;}\n    h2 {font-size: 1.8em;color: #444;margin-top: 40px;}\n    h3 {font-size: 1.3em;color: #555;margin-bottom: 15px;border-bottom: none;}\n    .section {border: 1px solid #ddd;padding: 20px;margin-bottom: 30px;background-color: #fff;border-radius: 5px;box-shadow: 0 2px 4px rgba(0,0,0,0.05);}\n    .entry {margin-bottom: 25px;padding-bottom: 25px;border-bottom: 1px dashed #e0e0e0;}\n    .entry:last-child {border-bottom: none;margin-bottom: 0;padding-bottom: 0;}\n    .entry p {margin: 8px 0;}\n    .entry strong {display: inline-block;min-width: 100px;}\n    .entry img {max-width: 100%;height: auto;border: 1px solid #ddd;margin-top: 10px;display: block;}\n    a {color: #0066cc;text-decoration: none;}\n    a:hover {text-decoration: underline;}\n    .file-status-table {width: 100%;border-collapse: collapse;margin-top: 15px;font-size: 0.9em;}\n    .file-status-table th, .file-status-table td {border: 1px solid #eee;padding: 8px 12px;text-align: left;}\n    .file-status-table th {background-color: #f5f5f5;font-weight: bold;color: #444;}\n    .verdict-malicious {color: darkred;font-weight: bold;}\n    .verdict-benign {color: darkgreen;font-weight: bold;}\n    .verdict-unknown {color: darkorange;font-weight: bold;}\n  </style>\n</head>\n<body>\n  <h1>Phishing Analysis Report</h1>\n  <div class=\"section\">\n    <h2>URL Analysis</h2>\n    ${urlEntries}\n  </div>\n  <div class=\"section\">\n    <h2>File Analysis</h2>\n    ${fileEntries}\n  </div>\n</body>\n</html>\n`;\n\n// Return HTML\nreturn [{ json: { html } }];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        928,
+        288
+      ],
+      "id": "0a735739-89ed-46b6-ae23-a684a739fc45",
+      "name": "Code in JavaScript",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "mode": "combine",
+        "combineBy": "combineAll",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1392,
+        16
+      ],
+      "id": "c9c4e457-1b2b-4cb2-90c6-87cbfacdf20f",
+      "name": "Merge1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "formTitle": "Phinsing",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Upload",
+              "fieldType": "file",
+              "multipleFiles": false
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -2784,
+        192
+      ],
+      "id": "607130eb-b7a8-46a5-8e5d-f4f8612cfa15",
+      "name": "On form submission",
+      "webhookId": "93dbc4c4-f4c9-4c9d-9870-dbc527d757b7"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://gmail.googleapis.com/upload/gmail/v1/users/me/messages/import?uploadType=media",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "gmailOAuth2",
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "Upload",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -2368,
+        208
+      ],
+      "id": "64c587f3-2451-4898-959d-d8b38bcee7e1",
+      "name": "HTTP Request",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "u14s5jxT2OFehKcE",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "messageId": "={{ $json.id }}",
+        "simple": false,
+        "options": {
+          "downloadAttachments": true
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        -2160,
+        208
+      ],
+      "id": "300b7038-9dfc-4684-ad29-41db64f03513",
+      "name": "Get a message",
+      "webhookId": "81b06328-6112-4354-9648-2a625c1b7a07",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "u14s5jxT2OFehKcE",
+          "name": "Gmail account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "136f803d-6e03-4c38-af13-afa1f0e49258",
+              "leftValue": "={{$binary}}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1824,
+        416
+      ],
+      "id": "8017a760-7236-4ecc-9987-51bc40beb616",
+      "name": "If"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Header Fields": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "URL": {
+      "main": [
+        [
+          {
+            "node": "Split URLs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "URL Fields": {
+      "main": [
+        [
+          {
+            "node": "URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Crypto": {
+      "main": [
+        [
+          {
+            "node": "VirusTotal HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perform a scan": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a scan": {
+      "main": [
+        [
+          {
+            "node": "URL_Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split URLs": {
+      "main": [
+        [
+          {
+            "node": "Perform a scan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Files": {
+      "main": [
+        [
+          {
+            "node": "Crypto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Get a scan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VirusTotal HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Malacious_Score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Malacious_Score": {
+      "main": [
+        [
+          {
+            "node": "Aggregate File Scores",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "URL_Score": {
+      "main": [
+        [
+          {
+            "node": "Aggregate URL Scores",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate File Scores": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Aggregate URL Scores": {
+      "main": [
+        [
+          {
+            "node": "Merge",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "On form submission": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Get a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a message": {
+      "main": [
+        [
+          {
+            "node": "URL Fields",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Header Fields",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Split Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "20aeff80-9374-456a-929e-3640f04011d5",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8206e3f16cdaf1fa00e154794763597292f51e704f3186d00e35b007b6c6f80c"
+  },
+  "id": "A3oIAR0n0bibYGSD",
+  "tags": []
+}
