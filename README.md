@@ -88,282 +88,243 @@ Each report includes:
   - Malware detection results
   - Threat intelligence data
  
-  <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Email Header Analysis Report</title>
+  <h1 align="center">Email & Phishing Analysis Report</h1>
 
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            margin: 0;
-            padding: 20px;
-            background-color: #f4f4f4;
-        }
+<hr>
 
-        .container {
-            max-width: 900px;
-            margin: 20px auto;
-            background: #fff;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
+<h2>1. Email Sender Information</h2>
 
-        h1, h2, h3 {
-            color: #0056b3;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 10px;
-            margin-top: 30px;
-        }
+<table>
+  <tr><th align="left">Field</th><th align="left">Value</th></tr>
+  <tr><td>Sender Domain (Mailfrom)</td><td>thcultarfdes.co.uk</td></tr>
+  <tr><td>From Header Domain</td><td>access-accsecurity.com</td></tr>
+  <tr>
+    <td>From Header</td>
+    <td>Microsoft account team &lt;no-reply@access-accsecurity.com&gt;</td>
+  </tr>
+  <tr><td>Recipient</td><td>phishing@pot</td></tr>
+  <tr><td>Sender IP</td><td>89.144.44.2</td></tr>
+</table>
 
-        h1 {
-            text-align: center;
-            color: #004085;
-            border-bottom: 3px solid #004085;
-            padding-bottom: 15px;
-            margin-bottom: 40px;
-        }
+<hr>
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-bottom: 20px;
-            background-color: #fcfcfc;
-        }
+<h2>2. Email Authentication Checks</h2>
 
-        th, td {
-            border: 1px solid #ddd;
-            padding: 10px;
-            text-align: left;
-            vertical-align: top;
-        }
+<h3>2.1 SPF (Sender Policy Framework)</h3>
 
-        th {
-            background-color: #e9f5ff;
-            font-weight: bold;
-        }
+<p>
+SPF verifies whether the sending IP address is authorized to send email on
+behalf of the MAIL FROM domain.
+</p>
 
-        .pass {
-            color: green;
-            font-weight: bold;
-        }
+<table>
+  <tr>
+    <th align="left">Parameter</th>
+    <th align="left">Detail</th>
+    <th align="left">Status</th>
+  </tr>
+  <tr>
+    <td>Domain Checked</td>
+    <td><code>thcultarfdes.co.uk</code></td>
+    <td rowspan="4" style="color:red;"><b>FAIL</b></td>
+  </tr>
+  <tr>
+    <td>SPF Record</td>
+    <td colspan="2">
+      None – domain does not designate permitted sender hosts
+    </td>
+  </tr>
+  <tr>
+    <td>Sender IP</td>
+    <td colspan="2"><code>89.144.44.2</code></td>
+  </tr>
+  <tr>
+    <td>Result</td>
+    <td colspan="2">
+      IP not authorized to send email
+    </td>
+  </tr>
+</table>
 
-        .fail {
-            color: red;
-            font-weight: bold;
-        }
+<p>
+<b>Recommendation:</b>
+SPF failure strongly indicates spoofing or sender misconfiguration.
+</p>
 
-        .neutral {
-            color: orange;
-            font-weight: bold;
-        }
+<hr>
 
-        .info {
-            background-color: #d9edf7;
-            border-left: 5px solid #31708f;
-            color: #31708f;
-            padding: 15px;
-            margin: 20px 0;
-            border-radius: 4px;
-        }
+<h3>2.2 DKIM (DomainKeys Identified Mail)</h3>
 
-        .footer {
-            text-align: center;
-            margin-top: 40px;
-            padding-top: 20px;
-            border-top: 1px solid #eee;
-            font-size: 0.9em;
-            color: #777;
-        }
+<p>
+DKIM verifies message integrity and authenticates the sending domain using
+cryptographic signatures.
+</p>
 
-        code {
-            background-color: #f8f8f8;
-            padding: 2px 5px;
-            border-radius: 4px;
-            font-family: Consolas, monospace;
-        }
-    </style>
-</head>
+<table>
+  <tr>
+    <th align="left">Parameter</th>
+    <th align="left">Detail</th>
+    <th align="left">Status</th>
+  </tr>
+  <tr>
+    <td>Domain Checked</td>
+    <td><code>thcultarfdes.co.uk</code></td>
+    <td rowspan="3" style="color:red;"><b>FAIL</b></td>
+  </tr>
+  <tr>
+    <td>DKIM Signature</td>
+    <td colspan="2">None (message not signed)</td>
+  </tr>
+  <tr>
+    <td>Overall Result</td>
+    <td colspan="2">DKIM authentication failed</td>
+  </tr>
+</table>
 
-<body>
-<div class="container">
+<p>
+<b>Recommendation:</b>
+Missing DKIM further reduces email trustworthiness.
+</p>
 
-    <h1>Email Header Analysis Report</h1>
+<hr>
 
-    <h2>1. Email Sender Information</h2>
-    <table>
-        <thead>
-            <tr>
-                <th>Field</th>
-                <th>Value</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Sender Domain (Mailfrom)</td>
-                <td>thcultarfdes.co.uk</td>
-            </tr>
-            <tr>
-                <td>From Header Domain</td>
-                <td>access-accsecurity.com</td>
-            </tr>
-            <tr>
-                <td>From Header</td>
-                <td>Microsoft account team &lt;no-reply@access-accsecurity.com&gt;</td>
-            </tr>
-            <tr>
-                <td>Recipient</td>
-                <td>phishing@pot</td>
-            </tr>
-            <tr>
-                <td>Sender IP</td>
-                <td>89.144.44.2</td>
-            </tr>
-        </tbody>
-    </table>
+<h3>2.3 DMARC (Domain-based Message Authentication)</h3>
 
-    <h2>2. Email Authentication Checks</h2>
+<p>
+DMARC builds on SPF and DKIM to enforce authentication alignment and define
+handling policies for failed messages.
+</p>
 
-    <h3>2.1 SPF (Sender Policy Framework)</h3>
-    <p>
-        SPF verifies whether the sending IP address is authorized by the domain
-        owner to send emails on its behalf.
-    </p>
+<table>
+  <tr>
+    <th align="left">Parameter</th>
+    <th align="left">Detail</th>
+    <th align="left">Status</th>
+  </tr>
+  <tr>
+    <td>Domain Checked</td>
+    <td><code>access-accsecurity.com</code></td>
+    <td rowspan="6" style="color:red;"><b>FAIL</b></td>
+  </tr>
+  <tr>
+    <td>DMARC Record</td>
+    <td colspan="2">Missing or malformed (permerror)</td>
+  </tr>
+  <tr>
+    <td>Policy</td>
+    <td colspan="2">None</td>
+  </tr>
+  <tr>
+    <td>SPF Alignment</td>
+    <td colspan="2">Failed</td>
+  </tr>
+  <tr>
+    <td>DKIM Alignment</td>
+    <td colspan="2">Failed</td>
+  </tr>
+  <tr>
+    <td>Overall Result</td>
+    <td colspan="2">
+      No DMARC enforcement possible
+    </td>
+  </tr>
+</table>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Parameter</th>
-                <th>Detail</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Domain Checked</td>
-                <td><code>thcultarfdes.co.uk</code></td>
-                <td rowspan="4" class="fail">FAIL</td>
-            </tr>
-            <tr>
-                <td>SPF Record</td>
-                <td>
-                    None – domain does not designate permitted sender hosts
-                </td>
-            </tr>
-            <tr>
-                <td>Sender IP</td>
-                <td><code>89.144.44.2</code></td>
-            </tr>
-            <tr>
-                <td>Result</td>
-                <td>
-                    SPF validation failed for the sending IP.
-                </td>
-            </tr>
-        </tbody>
-    </table>
+<p>
+<b>Recommendation:</b>
+Absence of DMARC combined with SPF and DKIM failures significantly increases
+the risk of phishing and spoofing.
+</p>
 
-    <p>
-        <strong>Recommendation:</strong>
-        SPF failed, indicating potential spoofing or misconfiguration.
-    </p>
+<hr>
 
-    <h3>2.2 DKIM (DomainKeys Identified Mail)</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>Parameter</th>
-                <th>Detail</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Domain Checked</td>
-                <td><code>thcultarfdes.co.uk</code></td>
-                <td rowspan="3" class="fail">FAIL</td>
-            </tr>
-            <tr>
-                <td>DKIM Signature</td>
-                <td>None</td>
-            </tr>
-            <tr>
-                <td>Result</td>
-                <td>Message not signed with DKIM.</td>
-            </tr>
-        </tbody>
-    </table>
+<h2>3. IP Reputation Analysis</h2>
 
-    <h3>2.3 DMARC</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>Parameter</th>
-                <th>Detail</th>
-                <th>Status</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td>Domain Checked</td>
-                <td><code>access-accsecurity.com</code></td>
-                <td rowspan="5" class="fail">FAIL</td>
-            </tr>
-            <tr>
-                <td>DMARC Record</td>
-                <td>No valid DMARC record found</td>
-            </tr>
-            <tr>
-                <td>Policy</td>
-                <td>permerror</td>
-            </tr>
-            <tr>
-                <td>SPF Alignment</td>
-                <td>Failed</td>
-            </tr>
-            <tr>
-                <td>DKIM Alignment</td>
-                <td>Failed</td>
-            </tr>
-        </tbody>
-    </table>
+<h3>3.1 Whois Information</h3>
 
-    <h2>3. IP Reputation Analysis</h2>
+<table>
+  <tr><td><b>IP Address</b></td><td><code>89.144.44.2</code></td></tr>
+  <tr><td><b>Organization</b></td><td>Hostinger International Limited</td></tr>
+  <tr><td><b>Country</b></td><td>Lithuania (LT)</td></tr>
+  <tr><td><b>ASN</b></td><td>AS47583</td></tr>
+  <tr><td><b>Abuse Contact</b></td><td>abuse@hostinger.com</td></tr>
+</table>
 
-    <h3>Sender IP: 89.144.44.2</h3>
-    <ul>
-        <li><strong>ISP:</strong> Hostinger International Limited</li>
-        <li><strong>Country:</strong> Lithuania</li>
-        <li><strong>ASN:</strong> AS47583</li>
-        <li><strong>Abuse Score:</strong> <span class="fail">75%</span></li>
-    </ul>
+<p>
+<b>Analysis:</b>
+The sender IP belongs to a commercial hosting provider, which is frequently
+abused for malicious email campaigns.
+</p>
 
-    <h2>4. Final Verdict</h2>
+<h3>3.2 AbuseIPDB Reputation</h3>
 
-    <div class="info">
-        <strong>Conclusion:</strong>
-        This email fails SPF, DKIM, and DMARC checks and originates from an IP
-        with a poor reputation. It is highly likely to be a phishing attempt.
-    </div>
+<table>
+  <tr><td><b>Abuse Score</b></td><td style="color:red;"><b>75% (High)</b></td></tr>
+  <tr><td><b>Total Reports</b></td><td>58</td></tr>
+  <tr><td><b>Last Reported</b></td><td>2024-07-20</td></tr>
+  <tr><td><b>Confidence of Abuse</b></td><td>80%</td></tr>
+  <tr><td><b>Usage Type</b></td><td>Web Hosting / ISP</td></tr>
+</table>
 
-    <ul>
-        <li>Mark the email as phishing.</li>
-        <li>Do not click links or open attachments.</li>
-        <li>Block the sender domains and IP if possible.</li>
-    </ul>
+<p>
+<b>Analysis:</b>
+The IP has a high abuse score and is frequently reported for phishing and
+spam-related activity.
+</p>
 
-    <div class="footer">
-        &copy; 2024 Automated Report Generator
-    </div>
+<hr>
 
+<h2>4. Phishing Analysis</h2>
+
+<h3>4.1 URL Analysis</h3>
+
+<table>
+  <tr><td><b>URL</b></td><td>null</td></tr>
+  <tr><td><b>Name</b></td><td>null</td></tr>
+  <tr><td><b>Screenshot</b></td><td>Not available</td></tr>
+  <tr><td><b>Verdict</b></td><td style="color:orange;"><b>Unknown</b></td></tr>
+  <tr>
+    <td><b>Validator</b></td>
+    <td>urlscan.io (Full report unavailable)</td>
+  </tr>
+</table>
+
+<h3>4.2 File Analysis</h3>
+
+<p>
+No file attachments were detected or analyzed for this email.
+</p>
+
+<hr>
+
+<h2>5. Final Verdict & Recommendations</h2>
+
+<div style="border-left:4px solid red; padding:10px;">
+  <b>High-Risk Phishing Email</b><br><br>
+  ❌ SPF failed<br>
+  ❌ DKIM failed<br>
+  ❌ DMARC failed<br>
+  🔴 Poor IP reputation<br>
+  ⚠️ No trusted URL validation
 </div>
-</body>
-</html>
+
+<h3>Recommended Actions</h3>
+
+<ul>
+  <li>Mark the email as phishing or spam</li>
+  <li>Do not click any links or open attachments</li>
+  <li>Do not reply or share personal information</li>
+  <li>Block sender domains and IP address</li>
+</ul>
+
+<hr>
+
+<p align="center">
+<b>Automated Email & Phishing Analysis Report</b><br>
+Generated via n8n automation<br>
+© 2024
+</p>
+
 
  
 
