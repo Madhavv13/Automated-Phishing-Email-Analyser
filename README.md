@@ -319,11 +319,7 @@ No file attachments were detected or analyzed for this email.
 
 <hr>
 
-<p align="center">
-<b>Automated Email & Phishing Analysis Report</b><br>
-Generated via n8n automation<br>
-© 2024
-</p>
+
 
 
  
