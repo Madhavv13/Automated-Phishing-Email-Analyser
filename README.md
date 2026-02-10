@@ -2,6 +2,9 @@
 
 An automated workflow for analyzing and reporting on potential phishing emails. This n8n workflow processes email headers and content to detect suspicious patterns, verify sender authenticity, and generate comprehensive security reports.
 
+<img width="1097" height="374" alt="image" src="https://github.com/user-attachments/assets/4f6a8214-97e2-4f1b-b19e-171b8c4427a7" />
+
+
 ## Features
 
 - **Header Analysis**: Examines email headers for SPF, DKIM, DMARC, and ARC authentication
