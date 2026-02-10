@@ -70,6 +70,7 @@ Each report includes:
   - From header
   - Sender IP address
 
+
 - **Email Authentication Checks**
   - SPF verification results
   - DKIM validation
